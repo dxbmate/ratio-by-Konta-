@@ -24,7 +24,7 @@
    COLOUR and TYPE: черный, слоновая кость, шалфей для прибыли, глина для убытка; Manrope + Cormorant
    LAYOUT: мини-апп, одна колонка, плавающий стеклянный док */
 :root{--bg:#000;--iv:#f2efe9;--mut:#8a8781;--mut2:#4d4b48;--line:rgba(242,239,233,.08);--fill:rgba(255,255,255,.06);--fill2:rgba(255,255,255,.1);--card:rgba(255,255,255,.045);
---sage:#9fbf98;--clay:#df7b62;--amb:#e9a15f;--mint:#a9d8c3;--btn:#f2efe9;--btnt:#000;--st:env(safe-area-inset-top);--sb:env(safe-area-inset-bottom);--spring:cubic-bezier(.3,1.45,.55,1);--ease:cubic-bezier(.2,.9,.25,1)}
+--sage:#9fbf98;--clay:#df7b62;--amb:#e9a15f;--mint:#a9d8c3;--btn:#f2efe9;--btnt:#000;--st:calc(max(env(safe-area-inset-top),var(--tg-safe-area-inset-top,0px)) + var(--tg-content-safe-area-inset-top,0px));--sb:max(env(safe-area-inset-bottom),var(--tg-safe-area-inset-bottom,0px));--spring:cubic-bezier(.3,1.45,.55,1);--ease:cubic-bezier(.2,.9,.25,1)}
 html.light{--bg:#f2eee6;--iv:#1c1914;--mut:#7a756c;--mut2:#aaa49a;--line:rgba(28,25,20,.09);--fill:rgba(28,25,20,.069);--fill2:rgba(28,25,20,.12);--card:rgba(255,255,255,.6);--sage:#5f8a57;--clay:#c25a40;--amb:#b8742f;--mint:#4f8f76;--btn:#1c1a16;--btnt:#f6f2ea}
 *{box-sizing:border-box;margin:0;padding:0;min-width:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--iv);font:15px/1.45 Manrope,-apple-system,system-ui,sans-serif;font-feature-settings:"tnum" 1;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;overflow-x:clip;-webkit-user-select:none;user-select:none}
@@ -120,8 +120,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.4;stro
 .pts{list-style:none}.pts li{padding:12px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.5}.pts li:first-child{border-top:0}
 .card{border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);padding:16px;margin-top:12px}
 .acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:22px}
-.act{display:flex;flex-direction:column;justify-content:space-between;gap:18px;min-height:112px;padding:14px;border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line),inset 0 1px 0 rgba(255,255,255,.05);text-align:left;transition:scale .35s var(--spring)}
+.act{display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:100px;padding:14px;border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line),inset 0 1px 0 rgba(255,255,255,.05);text-align:left;transition:scale .35s var(--spring)}
 .act .ic{width:34px;height:34px}.act b{font-weight:500;font-size:14px;line-height:1.25}
+.num.quiet{font-size:34px;letter-spacing:-.03em;margin:6px 0 6px}
+.setup .row{min-height:52px;padding:10px 0}.setup .row .n{font-size:14.5px}
+.ck{width:24px;height:24px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--mut2);display:grid;place-items:center}.ck.on{background:var(--sage);box-shadow:none;color:#0b0f0c}.ck svg{width:14px;height:14px}
+.done .n{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--mut2)}
 .tip{display:flex;gap:14px;align-items:flex-start}.tip p{font-size:14.5px;line-height:1.55}
 .ln{display:block;height:3px;border-radius:2px;background:var(--fill2);margin-top:8px;overflow:hidden}.ln i{display:block;height:100%;border-radius:2px;transition:width .8s var(--spring)}
 .fig{position:relative;height:190px;margin:16px 0 6px}.fig svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
@@ -187,7 +191,7 @@ html.light .toast{background:rgba(255,255,255,.9);color:#2a261f;box-shadow:0 12p
 <section class="view on" id="v-home">
   <div class="top"><div class="wm"><b>Ratio</b><i>by Konta &amp; Cie</i></div><span class="date" id="hDate"></span></div>
   <div class="hero" style="padding-top:26px">
-    <div class="lbl" style="display:flex;justify-content:space-between;align-items:center"><span>Результат сегодня</span><span class="seg mini" id="hCur"><button data-c="$" class="on">$</button><button data-c="₽">₽</button></span></div>
+    <div class="lbl" style="display:flex;justify-content:space-between;align-items:center;min-height:34px"><span>Сегодня</span><span class="seg mini" id="hCur"><button data-c="$" class="on">$</button><button data-c="₽">₽</button></span></div>
     <div class="num" id="hNum">0</div>
     <div class="sub" id="hSub"></div>
   </div>
@@ -198,10 +202,10 @@ html.light .toast{background:rgba(255,255,255,.9);color:#2a261f;box-shadow:0 12p
     <button class="act" id="hAdd"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19"/></svg></span><b>Записать сделку</b></button>
   </div>
   <div id="hStart"></div>
-  <h2>Совет коуча</h2>
-  <div class="tip"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M9 18H15M10 21H14"/><path d="M12 3A6 6 0 0 0 8 13.5C8.7 14.2 9 15 9 16H15C15 15 15.3 14.2 16 13.5A6 6 0 0 0 12 3Z"/></svg></span><p id="hTip"></p></div>
-  <h2>Последние сделки <button class="link" data-go="log">Все</button></h2>
-  <div id="hList"></div>
+  <div id="hCoach"><h2>Совет коуча</h2>
+  <div class="tip"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M9 18H15M10 21H14"/><path d="M12 3A6 6 0 0 0 8 13.5C8.7 14.2 9 15 9 16H15C15 15 15.3 14.2 16 13.5A6 6 0 0 0 12 3Z"/></svg></span><p id="hTip"></p></div></div>
+  <div id="hLast"><h2>Последние сделки <button class="link" data-go="log">Все</button></h2>
+  <div id="hList"></div></div>
 </section>
 
 <section class="view" id="v-scan">
@@ -337,7 +341,7 @@ const chev='<svg class="i chev" viewBox="0 0 24 24"><path d="M9 5L16 12L9 19"/><
 const applyMode=()=>{const m=store.get('ratio.mode','auto'),L=m==='light'||(m==='auto'&&(tg&&tg.colorScheme?tg.colorScheme==='light':matchMedia('(prefers-color-scheme: light)').matches));
   document.documentElement.classList.toggle('light',L);const c=L?'#f2eee6':'#000000';$('meta[name=theme-color]').content=c;
   if(tg){try{tg.setHeaderColor(c);tg.setBackgroundColor(c);tg.setBottomBarColor&&tg.setBottomBarColor(c)}catch(e){}}segSet('#mode','m',m)};
-if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();tg.onEvent('themeChanged',applyMode)}catch(e){}}
+if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();if(/ios|android/.test(tg.platform)&&tg.isVersionAtLeast&&tg.isVersionAtLeast('8.0')&&tg.requestFullscreen)tg.requestFullscreen();tg.onEvent('themeChanged',applyMode)}catch(e){}}
 applyMode();
 $$('#mode button').forEach(b=>b.onclick=()=>{store.set('ratio.mode',b.dataset.m);applyMode();haptic()});
 
@@ -462,20 +466,29 @@ const bindRows=sel=>$$(sel+' .row[data-id]').forEach(b=>b.onclick=()=>tradeSheet
 /* ---------- обзор ---------- */
 let hcur=store.get('ratio.hcur','$');
 $$('#hCur button').forEach(b=>b.onclick=()=>{hcur=b.dataset.c;store.set('ratio.hcur',hcur);renderHome();haptic()});
-function renderHome(){segSet('#hCur','c',hcur);
+function renderHome(){
   const d=new Date();const ds=d.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});$('#hDate').textContent=ds[0].toUpperCase()+ds.slice(1);
-  const b=brake(hcur),t=b.t;
-  $('#hNum').innerHTML=t.n?`<span class="${t.sum>=0?'c-sage':'c-clay'}">${money(t.sum,hcur,true)}</span>`:money(0,hcur);
-  $('#hSub').textContent=t.n?`${t.n} ${plural(t.n,'сделка','сделки','сделок')} за сегодня`:'Сегодня сделок еще не было';
-  const used=Math.min(100,b.lossPct/b.r.day*100||0);
-  $('#hBrake').innerHTML=`<span class="ic" style="${b.why.length?'color:var(--clay)':''}"><svg class="i" viewBox="0 0 24 24"><path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/>${b.why.length?'<path d="M12 8V12.5M12 15.5V16"/>':'<path d="M8.5 12L11 14.5L15.5 9.5"/>'}</svg></span>
-    <span class="t"><span class="n">${b.why.length?'Лимит дня исчерпан: на сегодня все':'Дневные лимиты в порядке'}</span><span class="s">${b.why.length?esc(b.why[0]):`Убыток ${f(b.lossPct,1)}% из ${f(b.r.day,1)}% · сделок ${t.n} из ${b.r.max}`}</span>${b.why.length?'':`<span class="ln"><i style="width:${used}%;background:${used>60?'var(--amb)':'var(--sage)'}"></i></span>`}</span>${chev}`;
-  $('#hBrake').onclick=()=>show('rules');
-  const real=S.j.filter(x=>!x.sample);
-  $('#hStart').innerHTML=real.length?'':`<div class="card" style="margin-top:22px"><div style="font-size:15px;font-weight:500">С чего начать</div><ol class="steps" style="margin-top:6px">
-    <li>Задайте депозит и дневной лимит убытка в <button class="link" data-go="rules">правилах</button></li><li>Подключите <button class="link" data-go="ex">биржу</button> или <button class="link" data-go="import">загрузите отчет</button></li><li>Перед каждым входом проверяйте сделку во вкладке «Позиция»</li></ol></div>`;
-  const L=S.j.filter(x=>x.c===hcur&&!x.sample);$('#hTip').textContent=coach(L,hcur)[0]||'Записывайте сделки, и коуч покажет, где вы теряете деньги: отыгрыш, вечерние входы, сделки без стопа.';
-  $('#hList').innerHTML=[...S.j].filter(x=>!x.sample).sort((a,b)=>b.ts-a.ts).slice(0,3).map(tradeRow).join('')||'<p class="note">Здесь появятся ваши сделки. Примеры, чтобы посмотреть, как все работает, лежат в журнале.</p>';bindRows('#hList')}
+  const real=S.j.filter(x=>!x.sample),curs=new Set(real.map(x=>x.c));
+  if(curs.size===1)hcur=[...curs][0];$('#hCur').style.display=curs.size>1?'':'none';segSet('#hCur','c',hcur);
+  const b=brake(hcur),t=b.t,used=Math.min(100,b.lossPct/b.r.day*100||0);
+  if(t.n){$('#hNum').className='num';$('#hNum').innerHTML=`<span class="${t.sum>=0?'c-sage':'c-clay'}">${money(t.sum,hcur,true)}</span>`;
+    $('#hSub').textContent=`${t.n} ${plural(t.n,'сделка','сделки','сделок')} за сегодня`}
+  else{$('#hNum').className='num quiet';$('#hNum').textContent='Сделок пока нет';
+    $('#hSub').textContent=`Лимит на день: убыток до ${f(b.r.day,1)}% депозита, не больше ${b.r.max} ${plural(b.r.max,'сделки','сделок','сделок')}`}
+  const hb=$('#hBrake');hb.style.display=t.n||b.why.length?'':'none';
+  hb.innerHTML=`<span class="ic" style="${b.why.length?'color:var(--clay)':''}"><svg class="i" viewBox="0 0 24 24"><path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/>${b.why.length?'<path d="M12 8V12.5M12 15.5V16"/>':'<path d="M8.5 12L11 14.5L15.5 9.5"/>'}</svg></span>
+    <span class="t"><span class="n">${b.why.length?'Лимит дня исчерпан: на сегодня все':'Лимиты в порядке'}</span><span class="s">${b.why.length?esc(b.why[0]):`Убыток ${f(b.lossPct,1)}% из ${f(b.r.day,1)}% · сделок ${t.n} из ${b.r.max}`}</span>${b.why.length?'':`<span class="ln"><i style="width:${used}%;background:${used>60?'var(--amb)':'var(--sage)'}"></i></span>`}</span>${chev}`;
+  hb.onclick=()=>show('rules');
+  const st=S.setup=S.setup||{},steps=[
+    [!!st.rules,'Задайте депозит и лимит на день','rules'],
+    [real.length>0||S.conns.length>0,'Добавьте сделки: биржа или отчет','import'],
+    [!!st.calc,'Посчитайте вход во вкладке «Позиция»','calc']],dn=steps.filter(x=>x[0]).length;
+  const tick='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5L10 17L19 7"/></svg>';
+  $('#hStart').innerHTML=st.hide||dn===3?'':`<div class="card setup" style="margin-top:22px;padding:6px 16px 4px"><div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 4px"><span style="font-size:15px;font-weight:500">Первые шаги · ${dn} из 3</span><button class="link" id="hHide">Скрыть</button></div>
+    ${steps.map(([ok,txt,go])=>`<button class="row ${ok?'done':''}" data-go="${go}"><span class="ck ${ok?'on':''}">${ok?tick:''}</span><span class="t"><span class="n">${txt}</span></span>${ok?'':chev}</button>`).join('')}</div>`;
+  const hh=$('#hHide');if(hh)hh.onclick=e=>{e.stopPropagation();st.hide=1;save();renderHome()};
+  const tips=coach(real.filter(x=>x.c===hcur),hcur);$('#hCoach').style.display=tips.length?'':'none';$('#hTip').textContent=tips[0]||'';
+  const last=[...real].sort((a,b)=>b.ts-a.ts).slice(0,3);$('#hLast').style.display=last.length?'':'none';$('#hList').innerHTML=last.map(tradeRow).join('');bindRows('#hList')}
 $('#hAdd').onclick=()=>tradeSheet(null);
 
 /* ---------- позиция ---------- */
@@ -484,7 +497,7 @@ const setSide=v=>{side=v;segSet('#cSide','v',v)};
 const setCur=v=>{ccur=v;segSet('#cCur','c',v);$('#cDepL').textContent='Депозит, '+v;$('#cLotL').textContent=v==='$'?'Шаг количества':'Бумаг в лоте';$('#cDep').value=S.rules[v].dep;$('#cRisk').value=Math.min(num($('#cRisk').value)||1,S.rules[v].risk)};
 $$('#cSide button').forEach(b=>b.onclick=()=>{setSide(b.dataset.v);calc();haptic()});
 $$('#cCur button').forEach(b=>b.onclick=()=>{setCur(b.dataset.c);calc();haptic()});
-['#cDep','#cRisk','#cEntry','#cStop','#cTake','#cLot','#cLev'].forEach(id=>$(id).oninput=calc);
+['#cDep','#cRisk','#cEntry','#cStop','#cTake','#cLot','#cLev'].forEach(id=>$(id).oninput=()=>{(S.setup=S.setup||{}).calc=1;save();calc()});
 function calc(){
   const dep=num($('#cDep').value),rp=num($('#cRisk').value),e=num($('#cEntry').value),s=num($('#cStop').value),tk=num($('#cTake').value);
   const step=num($('#cLot').value)>0?num($('#cLot').value):1,lev=Math.max(1,num($('#cLev').value)||1),cy=ccur==='$',per=side==='long'?e-s:s-e,W=[],rule=S.rules[ccur];
@@ -524,9 +537,9 @@ function coach(L,c){
   if(bad.length)tips.push(`Главная утечка: сделки с пометкой «${bad[0][0]}». Итог ${mo(bad[0][1].p)} за ${bad[0][1].n} ${plural(bad[0][1].n,'сделку','сделки','сделок')}.`);
   if(by['По плану'])tips.push(`Сделки по плану: ${mo(by['По плану'].p)}. ${by['По плану'].p>0?'Система работает, когда вы ее соблюдаете.':'Возможно, пересмотреть стоит сам план.'}`);
   const S2=[...L].sort((a,b)=>a.ts-b.ts),after=[];for(let i=2;i<S2.length;i++)if(P(S2[i-1])<0&&P(S2[i-2])<0)after.push(S2[i]);
-  if(after.length){const w=after.filter(x=>P(x)>0).length;tips.push(`После двух убытков подряд вы выигрываете в ${f(w/after.length*100,0)}% случаев. ${w/after.length<.4?'Похоже на отыгрыш: пауза здесь сэкономит деньги.':'Серии вас не ломают.'}`)}
+  if(after.length>=3){const w=after.filter(x=>P(x)>0).length;tips.push(`После двух убытков подряд вы выигрываете в ${f(w/after.length*100,0)}% случаев. ${w/after.length<.4?'Похоже на отыгрыш: пауза здесь сэкономит деньги.':'Серии вас не ломают.'}`)}
   const eve=L.filter(x=>{const h=new Date(x.ts).getHours();return h>=20||h<3}),ep=eve.reduce((s,x)=>s+P(x),0);
-  if(eve.length>=2)tips.push(`Вечерние и ночные сделки: ${eve.length}, итог ${mo(ep)}. ${ep<0?'Усталость дорого стоит.':'Вечер вам подходит.'}`);
+  if(eve.length>=3)tips.push(`Вечерние и ночные сделки: ${eve.length}, итог ${mo(ep)}. ${ep<0?'Усталость дорого стоит.':'Вечер вам подходит.'}`);
   const wd={};L.forEach(x=>{const d=new Date(x.ts).getDay();(wd[d]=wd[d]||{n:0,p:0}).n++;wd[d].p+=P(x)});const wds=Object.entries(wd).filter(([,v])=>v.n>=2).sort((a,b)=>a[1].p-b[1].p);
   if(wds.length&&wds[0][1].p<0)tips.push(`Худший день: ${WD[wds[0][0]]}, ${mo(wds[0][1].p)}.`);
   const ns=L.filter(x=>!x.st&&x.e);if(ns.length)tips.push(`${ns.length} из ${L.length} сделок без стопа, их итог ${mo(ns.reduce((s,x)=>s+P(x),0))}.`);
@@ -578,7 +591,7 @@ async function aiCoach(){const L=S.j.filter(x=>x.c===jcur);
 let rcur='$';
 $$('#rCur button').forEach(b=>b.onclick=()=>{rcur=b.dataset.c;segSet('#rCur','c',rcur);renderRules();haptic()});
 const RF=[['rDep','dep'],['rDay','day'],['rMax','max'],['rLev','lev'],['rRisk','risk'],['rPause','pause']];
-RF.forEach(([id,k])=>$('#'+id).oninput=()=>{const v=num($('#'+id).value);if(v>=0){S.rules[rcur][k]=v;save();renderStatus()}});
+RF.forEach(([id,k])=>$('#'+id).oninput=()=>{const v=num($('#'+id).value);if(v>=0){S.rules[rcur][k]=v;(S.setup=S.setup||{}).rules=1;save();renderStatus()}});
 function renderStatus(){const b=brake(rcur),r=b.r,used=Math.min(100,b.lossPct/r.day*100||0),tu=Math.min(100,b.t.n/r.max*100||0);
   $('#rStatus').innerHTML=`<div class="hero"><div class="lbl">Сегодня</div><div class="num ${b.why.length?'c-clay':''}" style="font-size:40px">${b.why.length?'На сегодня все':'Можно работать'}</div><div class="sub">${b.why.length?esc(b.why.join('. ')):'Лимиты не нарушены'}</div></div>
   <div class="row"><span class="t"><span class="n">Убыток за день</span><span class="ln"><i style="width:${used}%;background:${used>=100?'var(--clay)':used>60?'var(--amb)':'var(--sage)'}"></i></span></span><span class="a">${f(b.lossPct,1)}% из ${f(r.day,1)}%</span></div>
