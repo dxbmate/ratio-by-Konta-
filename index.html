@@ -353,7 +353,13 @@ const chev='<svg class="i chev" viewBox="0 0 24 24"><path d="M9 5L16 12L9 19"/><
 const applyMode=()=>{const m=store.get('ratio.mode','auto'),L=m==='light'||(m==='auto'&&(tg&&tg.colorScheme?tg.colorScheme==='light':matchMedia('(prefers-color-scheme: light)').matches));
   document.documentElement.classList.toggle('light',L);const c=L?'#f2eee6':'#000000';$('meta[name=theme-color]').content=c;
   if(tg){try{tg.setHeaderColor(c);tg.setBackgroundColor(c);tg.setBottomBarColor&&tg.setBottomBarColor(c)}catch(e){}}segSet('#mode','m',m)};
-if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();if(/ios|android/.test(tg.platform)&&tg.isVersionAtLeast&&tg.isVersionAtLeast('8.0')&&tg.requestFullscreen)tg.requestFullscreen();tg.onEvent('themeChanged',applyMode)}catch(e){}}
+if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();if(/ios|android/.test(tg.platform)&&tg.isVersionAtLeast&&tg.isVersionAtLeast('8.0')&&tg.requestFullscreen)tg.requestFullscreen();
+  const relayout=()=>{const ae=document.activeElement;if(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
+    document.documentElement.style.minHeight=(tg.viewportStableHeight||innerHeight)+'px';const d=document.querySelector('.dock');d.style.display='none';void d.offsetHeight;d.style.display='';
+    const y=scrollY;scrollTo(0,y+1);scrollTo(0,y);if(typeof show==='function'&&typeof cur!=='undefined'&&cur==='home')show('home',true)};
+  ['fullscreenChanged','safeAreaChanged','contentSafeAreaChanged'].forEach(ev=>tg.onEvent(ev,()=>setTimeout(relayout,60)));
+  tg.onEvent('viewportChanged',e=>{if(e&&e.isStateStable)setTimeout(relayout,60)});
+  setTimeout(relayout,900);tg.onEvent('themeChanged',applyMode)}catch(e){}}
 applyMode();
 $$('#mode button').forEach(b=>b.onclick=()=>{store.set('ratio.mode',b.dataset.m);applyMode();haptic()});
 
