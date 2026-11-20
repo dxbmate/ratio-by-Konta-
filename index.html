@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ratio">
-<meta name="description" content="Ratio by Konta & Cie. Разбор рынка, размер позиции, журнал сделок и стоп-кран.">
+<meta name="description" content="Ratio by Konta & Cie. Разбор рынка, размер позиции, журнал сделок и дневной лимит убытка.">
 <title>Ratio by Konta & Cie</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -255,7 +255,7 @@ html.light .toast{background:rgba(255,255,255,.9);color:#2a261f;box-shadow:0 12p
 </section>
 
 <section class="view" id="v-rules">
-  <div class="hdr"><button class="rb back" aria-label="Назад"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M15 5L8 12L15 19"/></svg></button><div class="tt"><h1>Правила</h1><div class="sub">Стоп-кран: договор с самим собой</div></div></div>
+  <div class="hdr"><button class="rb back" aria-label="Назад"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M15 5L8 12L15 19"/></svg></button><div class="tt"><h1>Правила</h1><div class="sub">Ratio остановит вас, когда день пошел не так</div></div></div>
   <div class="seg" id="rCur"><button data-c="$" class="on">Крипта, $</button><button data-c="₽">Мосбиржа, ₽</button></div>
   <div id="rStatus"></div>
   <h2>Лимиты</h2>
@@ -469,11 +469,11 @@ function renderHome(){segSet('#hCur','c',hcur);
   $('#hSub').textContent=t.n?`${t.n} ${plural(t.n,'сделка','сделки','сделок')} за сегодня`:'Сегодня сделок еще не было';
   const used=Math.min(100,b.lossPct/b.r.day*100||0);
   $('#hBrake').innerHTML=`<span class="ic" style="${b.why.length?'color:var(--clay)':''}"><svg class="i" viewBox="0 0 24 24"><path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/>${b.why.length?'<path d="M12 8V12.5M12 15.5V16"/>':'<path d="M8.5 12L11 14.5L15.5 9.5"/>'}</svg></span>
-    <span class="t"><span class="n">${b.why.length?'Стоп-кран: на сегодня все':'Стоп-кран в норме'}</span><span class="s">${b.why.length?esc(b.why[0]):`Лимит убытка использован на ${f(used,0)}% · сделок ${t.n} из ${b.r.max}`}</span>${b.why.length?'':`<span class="ln"><i style="width:${used}%;background:${used>60?'var(--amb)':'var(--sage)'}"></i></span>`}</span>${chev}`;
+    <span class="t"><span class="n">${b.why.length?'Лимит дня исчерпан: на сегодня все':'Дневные лимиты в порядке'}</span><span class="s">${b.why.length?esc(b.why[0]):`Убыток ${f(b.lossPct,1)}% из ${f(b.r.day,1)}% · сделок ${t.n} из ${b.r.max}`}</span>${b.why.length?'':`<span class="ln"><i style="width:${used}%;background:${used>60?'var(--amb)':'var(--sage)'}"></i></span>`}</span>${chev}`;
   $('#hBrake').onclick=()=>show('rules');
   const real=S.j.filter(x=>!x.sample);
   $('#hStart').innerHTML=real.length?'':`<div class="card" style="margin-top:22px"><div style="font-size:15px;font-weight:500">С чего начать</div><ol class="steps" style="margin-top:6px">
-    <li>Задайте депозит и лимиты в <button class="link" data-go="rules">правилах</button></li><li>Подключите <button class="link" data-go="ex">биржу</button> или <button class="link" data-go="import">загрузите отчет</button></li><li>Перед каждым входом проверяйте сделку во вкладке «Позиция»</li></ol></div>`;
+    <li>Задайте депозит и дневной лимит убытка в <button class="link" data-go="rules">правилах</button></li><li>Подключите <button class="link" data-go="ex">биржу</button> или <button class="link" data-go="import">загрузите отчет</button></li><li>Перед каждым входом проверяйте сделку во вкладке «Позиция»</li></ol></div>`;
   const L=S.j.filter(x=>x.c===hcur&&!x.sample);$('#hTip').textContent=coach(L,hcur)[0]||'Записывайте сделки, и коуч покажет, где вы теряете деньги: отыгрыш, вечерние входы, сделки без стопа.';
   $('#hList').innerHTML=[...S.j].filter(x=>!x.sample).sort((a,b)=>b.ts-a.ts).slice(0,3).map(tradeRow).join('')||'<p class="note">Здесь появятся ваши сделки. Примеры, чтобы посмотреть, как все работает, лежат в журнале.</p>';bindRows('#hList')}
 $('#hAdd').onclick=()=>tradeSheet(null);
@@ -500,7 +500,7 @@ function calc(){
   if(Number.isFinite(rr)&&rr>0&&rr<1.5)W.push('Риск к прибыли хуже 1 : 1,5. Придется угадывать больше половины сделок.');
   if(Number.isFinite(rr)&&rr<=0)W.push('Тейк по ту же сторону, что и стоп.');
   $('#cWarn').innerHTML=W.map(w=>`<div class="warn">${w}</div>`).join('');
-  const V=[],b=brake(ccur);b.why.forEach(w=>V.push('Стоп-кран. '+w));
+  const V=[],b=brake(ccur);b.why.forEach(w=>V.push('Лимит дня. '+w));
   if(lev>rule.lev)V.push(`Плечо ${f(lev,1)}x больше вашего максимума ${f(rule.lev,1)}x`);
   if(rp>rule.risk)V.push(`Риск ${f(rp,1)}% больше вашего максимума ${f(rule.risk,1)}%`);
   if(S.scan&&S.scan.cur===ccur&&((side==='long'&&S.scan.share<=.3)||(side==='short'&&S.scan.share>=.7)))V.push(`Последний разбор ${S.scan.t} против этой сделки: картина ${S.scan.share<=.3?'медвежья':'бычья'}`);
@@ -562,7 +562,7 @@ function tradeSheet(x){
     S.j=isNew?[y,...S.j]:S.j.map(z=>z.id===x.id?y:z);save();closeSheet();if(y.c!==jcur){jcur=y.c;segSet('#jCur','c',jcur)}show(cur,true);haptic('medium');checkBrake(y.c)};
   const del=$('#fDel');if(del)del.onclick=()=>{S.j=S.j.filter(z=>z.id!==x.id);save();closeSheet();show(cur,true);toast('Сделка удалена')}}
 $('#addT').onclick=()=>tradeSheet(null);
-function checkBrake(c){if(brake(c).why.length){toast('Стоп-кран: на сегодня хватит');try{tg&&tg.HapticFeedback.notificationOccurred('warning')}catch(e){}}}
+function checkBrake(c){if(brake(c).why.length){toast('Лимит дня исчерпан: на сегодня хватит');try{tg&&tg.HapticFeedback.notificationOccurred('warning')}catch(e){}}}
 
 /* ---------- сервер ---------- */
 async function api(action,data){if(!RATIO_API)throw new Error('noapi');
@@ -591,19 +591,19 @@ $('#addRule').onclick=()=>{openSheet(`<div class="hdr" style="margin-top:0"><div
   $('#nrS').onclick=()=>{const v=$('#nr').value.trim();if(v){S.check.push(v);save();closeSheet();renderRules()}}};
 
 /* ---------- биржи ---------- */
-const EX=[['bybit','Bybit'],['binance','Binance'],['okx','OKX',1],['bingx','BingX'],['bitget','Bitget',1],['mexc','MEXC'],['gate','Gate'],['htx','HTX'],['kucoin','KuCoin',1],['tinvest','Т-Инвестиции',2]];
+const EX=[['bybit','Bybit'],['binance','Binance'],['okx','OKX',1],['bingx','BingX'],['bitget','Bitget',1],['mexc','MEXC'],['gate','Gate'],['htx','HTX'],['kucoin','KuCoin',1],['tinvest','Т-Инвестиции',2],['bybit-testnet','Bybit Testnet',3]];
 const EXN={...Object.fromEntries(EX.map(e=>[e[0],e[1]])),file:'отчет'};
 function renderEx(){const on=new Set(S.conns);
   $('#exStatus').innerHTML=RATIO_API?'':'<div class="card" style="margin:6px 0 10px"><div style="font-size:15px;font-weight:500">Скоро</div><p class="note" style="margin-top:4px">Автоматическая загрузка с бирж появится в ближайшем обновлении. Пока сделки можно <button class="link" data-go="import">загрузить отчетом</button>.</p></div>';
-  $('#exList').innerHTML=EX.map(([id,n,k])=>`<button class="row" data-x="${id}"><span class="ic">${n.slice(0,2)}</span><span class="t"><span class="n">${n}</span><span class="s">${k===2?'Мосбиржа и СПБ · токен только для чтения':'Спот и фьючерсы · ключ только для чтения'}</span></span><span class="a ${on.has(id)?'c-sage':'c-mut'}">${on.has(id)?'Подключено':RATIO_API?'Подключить':'Скоро'}</span></button>`).join('');
+  $('#exList').innerHTML=EX.map(([id,n,k])=>`<button class="row" data-x="${id}"><span class="ic">${k===3?'Te':n.slice(0,2)}</span><span class="t"><span class="n">${n}</span><span class="s">${k===2?'Мосбиржа и СПБ · токен только для чтения':k===3?'Демо-счет с ненастоящими деньгами: попробовать без риска':'Спот и фьючерсы · ключ только для чтения'}</span></span><span class="a ${on.has(id)?'c-sage':'c-mut'}">${on.has(id)?'Подключено':RATIO_API?'Подключить':'Скоро'}</span></button>`).join('');
   $$('#exList .row').forEach(b=>b.onclick=()=>exSheet(b.dataset.x));$('#syncBtn').style.display=S.conns.length?'':'none'}
 function exSheet(id){const [,n,k]=EX.find(e=>e[0]===id),on=S.conns.includes(id);
   if(!RATIO_API){toast(`${n}: подключение появится в ближайшем обновлении`);return}
   if(on){openSheet(`<div class="hdr" style="margin-top:0"><div class="tt"><h1>${n}</h1><div class="sub">Подключено, сделки загружаются в журнал</div></div></div><button class="btn ghost" id="exOff">Отключить и удалить ключ</button>`);
     $('#exOff').onclick=async()=>{try{await api('disconnect',{exchange:id})}catch(e){}S.conns=S.conns.filter(x=>x!==id);save();closeSheet();renderEx();toast(n+' отключена')};return}
-  const how=k===2?'В приложении Т-Инвестиций: Настройки, Токены T-Invest API, создать токен «Только для чтения».':`На ${n}: Профиль, API, создать ключ. Разрешение только «Чтение», без торговли и вывода.${k?' Придумайте passphrase и введите ее здесь.':''}`;
+  const how=k===3?'Зарегистрируйтесь на testnet.bybit.com, получите тестовые USDT, затем Профиль, API, создать ключ «Только чтение». Это отдельный сайт, не основной Bybit.':k===2?'В приложении Т-Инвестиций: Настройки, Токены T-Invest API, создать токен «Только для чтения».':`На ${n}: Профиль, API, создать ключ. Разрешение только «Чтение», без торговли и вывода.${k?' Придумайте passphrase и введите ее здесь.':''}`;
   openSheet(`<div class="hdr" style="margin-top:0"><div class="tt"><h1>${n}</h1><div class="sub">${how}</div></div></div>
-  ${k===2?'<label>Токен</label><input id="kA" autocomplete="off">':`<label>API Key</label><input id="kA" autocomplete="off"><label style="margin-top:12px">API Secret</label><input id="kS" autocomplete="off" type="password">${k?'<label style="margin-top:12px">Passphrase</label><input id="kP" autocomplete="off" type="password">':''}`}
+  ${k===2?'<label>Токен</label><input id="kA" autocomplete="off">':`<label>API Key</label><input id="kA" autocomplete="off"><label style="margin-top:12px">API Secret</label><input id="kS" autocomplete="off" type="password">${k===1?'<label style="margin-top:12px">Passphrase</label><input id="kP" autocomplete="off" type="password">':''}`}
   <button class="btn" id="kGo" style="margin-top:18px">Подключить</button><p class="note">Проверим, что ключ работает, и сохраним его в зашифрованном виде.</p>`);
   $('#kGo').onclick=async()=>{const a=$('#kA').value.trim(),s=$('#kS')?$('#kS').value.trim():'',p=$('#kP')?$('#kP').value.trim():'';
     if(!a||(k!==2&&!s)){toast('Заполните ключи');return}
@@ -620,21 +620,22 @@ $('#syncBtn').onclick=sync;
 /* ---------- импорт отчетов ---------- */
 let icur='$',parsed=null;
 $$('#iCur button').forEach(b=>b.onclick=()=>{icur=b.dataset.c;segSet('#iCur','c',icur);if(parsed)renderImport();haptic()});
-const FIELDS={sym:['символ','инструмент','тикер','контракт','актив','пара','symbol','contract','instrument','ticker','pair','market','coin','asset'],
-  side:['направление','тип','операция','сторона','side','direction','type','buy/sell','order side','trade type','position side'],
+const FIELDS={sym:['код цб','код ценной бумаги','тикер','символ','инструмент','наименование цб','ценная бумага','контракт','актив','пара','symbol','contract','instrument','ticker','pair','market','coin','asset'],
+  side:['вид сделки','вид','направление','покупка/продажа','тип сделки','тип','операция','сторона','side','direction','type','buy/sell','order side','trade type','position side'],
   qty:['количество','объем','кол-во','лоты','qty','quantity','amount','size','volume','filled','executed','contracts','closed size','closing quantity'],
   entry:['цена открытия','цена входа','средняя цена входа','entry price','open price','avg entry price','average entry price','entry','avg. entry price','avg open price','opening price'],
   exit:['цена закрытия','цена выхода','exit price','close price','avg exit price','average exit price','exit','avg. close price','avg close price','closing price','avg. exit price'],
   price:['цена','средняя цена','цена сделки','price','avg price','average price','filled price','exec price','execution price','trade price','deal price'],
   pnl:['прибыль','результат','доход','финансовый результат','profit','closed pnl','realized pnl','realised pnl','pnl','p&l','net profit','realized profit','closed p&l'],
   time:['время закрытия','дата закрытия','время','дата','дата и время','close time','closed time','time','date','trade time','created time','updated time','date(utc)','time(utc)','datetime','timestamp','exec time'],
-  stop:['s / l','s/l','стоп','stop loss','sl']};
+  stop:['s / l','s/l','стоп','stop loss','sl'],
+  date:['дата заключения','дата сделки','дата исполнения','trade date','дата','date']};
 const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').replace(/[()]/g,m=>m).trim();
 function detect(header){const H=header.map(norm),map={},used=new Set();
   const take=(k,i)=>{map[k]=i;used.add(i)};
-  for(const k of ['entry','exit','pnl','stop','sym','side','qty','time','price'])
+  for(const k of ['entry','exit','pnl','stop','sym','side','qty','date','time','price'])
     for(const pass of ['exact','inc']){if(map[k]!=null)break;
-      for(let i=0;i<H.length;i++){if(used.has(i)||!H[i])continue;const hit=FIELDS[k].some(s=>pass==='exact'?H[i]===s:H[i].includes(s));if(hit){take(k,i);break}}}
+      for(const syn of FIELDS[k]){if(map[k]!=null)break;for(let i=0;i<H.length;i++){if(used.has(i)||!H[i])continue;if(pass==='exact'?H[i]===syn:H[i].includes(syn)){take(k,i);break}}}}
   /* MetaTrader: две колонки «Время» и две «Цена» = открытие и закрытие */
   const dup=w=>H.map((h,i)=>[h,i]).filter(([h])=>FIELDS[w].includes(h)).map(([,i])=>i);
   const pr=dup('price'),tm=dup('time');
@@ -664,11 +665,11 @@ function build(rows){
   let hi=-1,map=null;for(let i=0;i<Math.min(rows.length,80);i++){const m=detect(rows[i]);const sc=Object.keys(m).filter(k=>k!=='inv').length;if(m.sym!=null&&(m.pnl!=null||m.price!=null||m.entry!=null)&&sc>=3){hi=i;map=m;break}}
   if(hi<0)throw new Error('Не нашли таблицу сделок. Нужны хотя бы колонки инструмента и цены или результата.');
   const header=rows[hi],body=[];for(let i=hi+1;i<rows.length;i++){const r=rows[i];if(!r||r.filter(v=>String(v).trim()).length<3){if(body.length)break;continue}
-    if(Object.keys(detect(r)).filter(k=>k!=='inv').length>=3)break;body.push(r)}
+    if(Object.keys(detect(r)).filter(k=>k!=='inv').length>=4)break;body.push(r)}
   return {header,map,body,mt:/symbol|символ/i.test(header.join(' '))&&/s\s*\/\s*l/i.test(header.join(' '))}}
 function toTrades(P){const M=P.map,g=(r,k)=>M[k]!=null?r[M[k]]:undefined,out=[],fills=[];
   const mode=M.entry!=null&&M.exit!=null?'trips':M.pnl!=null?'pnl':M.price!=null&&M.side!=null?'fills':null;
-  for(const r of P.body){const t=symOf(g(r,'sym')),ts=parseTime(g(r,'time'));if(!t||!Number.isFinite(ts))continue;
+  for(const r of P.body){const t=symOf(g(r,'sym')),tv=g(r,'time'),dv=g(r,'date'),only=/^\s*\d{1,2}:\d{2}/.test(String(tv==null?'':tv));let ts=dv!=null&&dv!==''&&(only||tv==null||tv==='')?parseTime(String(dv).trim()+(only?' '+String(tv).trim():'')):parseTime(tv);if(!Number.isFinite(ts)&&dv)ts=parseTime(dv);if(!t||!Number.isFinite(ts))continue;
     let sd=sideOf(g(r,'side'))||'long';if(M.inv)sd=sd==='long'?'short':'long';const q=Math.abs(num(g(r,'qty')))||0,p=num(g(r,'pnl'));
     if(mode==='trips'){const e=num(g(r,'entry')),x=num(g(r,'exit'));if(!(e>0&&x>0))continue;
       out.push({t,s:sd,e,x,q:q||1,p:Number.isFinite(p)?p:undefined,st:num(g(r,'stop'))||null,ts})}
@@ -679,7 +680,7 @@ function toTrades(P){const M=P.map,g=(r,k)=>M[k]!=null?r[M[k]]:undefined,out=[],
     while(left>1e-12&&B.length){const lot=B[0],k=Math.min(left,lot.q);cost+=k*lot.pr;qq+=k;lot.q-=k;left-=k;if(lot.q<=1e-12)B.shift()}
     if(qq>0)out.push({t:fl.t,s:'long',e:cost/qq,x:fl.pr,q:qq,st:null,ts:fl.ts})})}
   return {mode,trades:out.map(x=>{if(x.p===undefined)delete x.p;const id='f:'+x.t+':'+x.ts+':'+(+x.q).toFixed(6)+':'+(x.p!=null?(+x.p).toFixed(2):(+x.x).toFixed(6));return {...x,id,tags:[],n:'',src:'file'}})}}
-const FN={sym:'Инструмент',side:'Направление',qty:'Количество',entry:'Цена входа',exit:'Цена выхода',price:'Цена',pnl:'Результат',time:'Время',stop:'Стоп'};
+const FN={date:'Дата',sym:'Инструмент',side:'Направление',qty:'Количество',entry:'Цена входа',exit:'Цена выхода',price:'Цена',pnl:'Результат',time:'Время',stop:'Стоп'};
 function renderImport(){const {trades,mode}=toTrades(parsed),have=new Set(S.j.map(x=>x.id)),fresh=trades.filter(x=>!have.has(x.id));
   const fmt=parsed.mt?'Отчет MetaTrader':mode==='trips'?'Закрытые позиции':mode==='pnl'?'Результаты сделок':mode==='fills'?'Исполнения, склеим в сделки':'Формат не распознан';
   const opts=k=>`<select data-k="${k}"><option value="">нет</option>${parsed.header.map((h,i)=>`<option value="${i}" ${parsed.map[k]===i?'selected':''}>${esc(String(h).slice(0,30)||'колонка '+(i+1))}</option>`).join('')}</select>`;
@@ -704,12 +705,13 @@ let deferredInstall=null;window.addEventListener('beforeinstallprompt',e=>{e.pre
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 function renderMore(){const I=(p)=>`<span class="ic"><svg class="i" viewBox="0 0 24 24">${p}</svg></span>`;
   const items=[
-    ['rules',I('<path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/><path d="M8.5 12L11 14.5L15.5 9.5"/>'),'Правила и стоп-кран','Лимиты, чеклист перед входом'],
+    ['rules',I('<path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/><path d="M8.5 12L11 14.5L15.5 9.5"/>'),'Правила и лимиты','Дневной лимит убытка, чеклист перед входом'],
     ['ex',I('<path d="M9 15L15 9"/><path d="M11 6L13 4A4 4 0 0 1 20 11L18 13M13 18L11 20A4 4 0 0 1 4 13L6 11"/>'),'Биржи','Bybit, Binance, OKX и еще 7'],
     ['import',I('<path d="M3 14V19H21V14"/><path d="M12 3V15M7 10L12 15L17 10"/>'),'Загрузить отчет','CSV, Excel, MetaTrader'],
     ['home-screen',I('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 9V15M9 12H15"/>'),'Добавить на экран «Домой»','Открывать Ratio одним касанием'],
     ['channel',I('<path d="M21 4L3 11L10 13.5M21 4L18 20L10 13.5M21 4L10 13.5V19L13 15.5"/>'),'Канал Konta & Cie','Новости и обновления'],
     ['support',I('<path d="M4 12A8 8 0 1 1 7.5 18.6L4 20L5.2 16.6A8 8 0 0 1 4 12Z"/><path d="M9 10.5A3 3 0 1 1 12 13.5V14.5M12 17V17.2"/>'),'Поддержка','Вопрос или идея'],
+    ['security',I('<path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.2 10.5V9.3A1.8 1.8 0 0 1 13.8 9.3V10.5"/>'),'Безопасность и данные','Где хранятся сделки и ключи'],
     ['about',I('<circle cx="12" cy="12" r="8.5"/><path d="M12 11V16.5M12 7.8V8"/>'),'О Ratio','Что это и как устроено']];
   $('#moreList').innerHTML=items.filter(i=>!(i[0]==='home-screen'&&standalone())).map(([k,ic,n,s])=>`<button class="row" data-m="${k}">${ic}<span class="t"><span class="n">${n}</span><span class="s">${s}</span></span>${chev}</button>`).join('');
   $$('#moreList .row').forEach(b=>b.onclick=()=>more(b.dataset.m));segSet('#mode','m',store.get('ratio.mode','auto'))}
@@ -718,6 +720,13 @@ function more(k){haptic();
   if(['rules','ex','import'].includes(k))return show(k);
   if(k==='channel')return openLink(LINKS.channel);
   if(k==='support')return openLink(LINKS.support);
+  if(k==='security')return openSheet(`<div class="hdr" style="margin-top:0"><div class="tt"><h1>Безопасность</h1><div class="sub">Коротко и честно о ваших данных</div></div></div>
+    <ul class="pts"><li><b style="font-weight:500">Журнал и правила</b> хранятся только на вашем телефоне. На сервер они не отправляются, если вы сами не попросите AI-разбор.</li>
+    <li><b style="font-weight:500">Биржи подключаются ключом только для чтения.</b> Таким ключом нельзя торговать и выводить деньги, даже если его украдут. При создании ключа проверьте, что торговля и вывод выключены.</li>
+    <li><b style="font-weight:500">Ключи шифруются</b> (AES) и хранятся на сервере в России, в Yandex Cloud. В приложение они не возвращаются, а при отключении биржи удаляются.</li>
+    <li><b style="font-weight:500">Вход только через Telegram.</b> Сервер проверяет подпись Telegram, поэтому подставить чужой аккаунт нельзя.</li>
+    <li><b style="font-weight:500">Мы не просим</b> пароли, паспорт, доступ к деньгам и номер карты.</li></ul>
+    <button class="btn ghost" id="okSec" style="margin-top:16px">Понятно</button>`),$('#okSec').onclick=closeSheet;
   if(k==='about')return openSheet(`<div class="wm" style="justify-content:center;margin:10px 0 4px"><b style="font-size:34px">Ratio</b><i>by Konta &amp; Cie</i></div><p class="note" style="text-align:center;margin-bottom:18px">Версия ${VERSION}</p>
     <ul class="pts"><li>Ratio показывает рынок, считает риск и ведет журнал. Это инструмент дисциплины, а не сигналы.</li><li>Ratio не дает индивидуальных инвестиционных рекомендаций. Все решения о сделках вы принимаете сами и сами несете за них риск.</li><li>Разбор строится по техническим индикаторам и не предсказывает цену. Прошлые результаты не гарантируют будущих.</li><li>Журнал и правила хранятся на вашем устройстве. Ключи бирж, если подключите, хранятся на сервере в зашифрованном виде.</li></ul>
     <button class="btn ghost" id="resetAll" style="margin-top:18px">Стереть все данные</button>`),$('#resetAll').onclick=()=>{openSheet(`<div class="hdr" style="margin-top:0"><div class="tt"><h1>Стереть все?</h1><div class="sub">Журнал, правила и настройки удалятся с этого устройства.</div></div></div><button class="btn" id="rsYes" style="background:var(--clay);color:#fff">Стереть</button><button class="btn ghost" id="rsNo" style="margin-top:8px">Отмена</button>`);
@@ -731,7 +740,7 @@ function more(k){haptic();
 /* ---------- заставка и знакомство ---------- */
 const SLIDES=[
   ['Рынок без шума','Ratio разбирает график: аргументы быков и медведей, волатильность, уровни. Показания, а не сигналы.','<svg viewBox="0 0 200 160" width="220" height="176" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M10 130 L50 95 L80 110 L120 60 L150 75 L190 25" stroke-width="2"/><path d="M10 120 Q90 100 190 50" stroke="var(--amb)" stroke-width="1" opacity=".7"/><circle cx="190" cy="25" r="5" fill="var(--sage)" stroke="none"/><path d="M10 150H190" stroke="var(--mut2)" stroke-width="1"/></svg>'],
-  ['Стоп-кран','Задайте лимиты один раз. Когда день пошел не так, Ratio скажет: на сегодня все. Вы сами об этом попросили.','<svg viewBox="0 0 200 160" width="220" height="176" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M100 18L150 36V76C150 108 128 128 100 138C72 128 50 108 50 76V36L100 18Z"/><path d="M80 78L95 93L122 63" stroke="var(--sage)" stroke-width="2.4" stroke-linecap="round"/></svg>'],
+  ['Лимит на день','Задайте, сколько готовы потерять за день. Когда лимит исчерпан, Ratio скажет: на сегодня все.','<svg viewBox="0 0 200 160" width="220" height="176" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M100 18L150 36V76C150 108 128 128 100 138C72 128 50 108 50 76V36L100 18Z"/><path d="M80 78L95 93L122 63" stroke="var(--sage)" stroke-width="2.4" stroke-linecap="round"/></svg>'],
   ['Журнал, который учит','Сделки с бирж и из отчетов попадают в журнал. Коуч находит, где вы теряете: отыгрыш, вечер, плечо, новости.','<svg viewBox="0 0 200 160" width="220" height="176" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M50 22H140A10 10 0 0 1 150 32V140H60A10 10 0 0 1 50 130Z"/><path d="M50 130A10 10 0 0 1 60 120H150M72 50H128M72 68H110"/><path d="M72 90L84 84L96 94L110 80" stroke="var(--sage)"/></svg>'],
   ['Решение за вами','Ratio не дает инвестиционных рекомендаций и не обещает доходность. Это инструмент учета и дисциплины.','<div class="wm" style="justify-content:center"><b style="font-size:54px">Ratio</b></div><div class="wm" style="justify-content:center;margin-top:4px"><i style="font-size:20px">by Konta &amp; Cie</i></div>']];
 function onboarding(){if(store.get('ratio.onb',0))return;const o=$('#onb');o.classList.add('on');let i=0;
