@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=DM+Sans:wght@400&family=Cormorant+Garamond:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
 <script>try{var m=localStorage.getItem('ratio.mode')||'auto',w=window.Telegram&&Telegram.WebApp;if(m==='light'||(m==='auto'&&(w&&w.colorScheme?w.colorScheme==='light':matchMedia('(prefers-color-scheme: light)').matches)))document.documentElement.classList.add('light')}catch(e){}</script>
 <style>
 /* VOICE: тихая швейцарская роскошь Konta & Cie, ничего лишнего
@@ -45,7 +45,7 @@ main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:calc(14px
 .splash.out{opacity:0;visibility:hidden}
 .splash .stage{position:relative;width:100%;max-width:430px;height:300px}
 .splash .stage>svg:first-child{position:absolute;inset:0;width:100%;height:100%}
-.splash .rr{position:absolute;left:0;right:0;top:40px;text-align:center;padding-left:8px;font:400 160px/1 "DM Sans",-apple-system,sans-serif;background:linear-gradient(180deg,#fffdf8,#efe8dc 55%,#cfc6b6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;opacity:0;transform:translateY(10px);animation:rise 1s var(--ease) .15s forwards}
+.splash .rr{position:absolute;left:50%;top:62px;width:42px;height:109px;margin-left:-21px;overflow:visible;opacity:0;transform:translateY(10px);animation:rise 1s var(--ease) .15s forwards}
 .splash .hl{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.4s var(--ease) .1s forwards}
 .splash .glw{opacity:0;animation:fade 1.6s ease .3s forwards}
 .splash .nm{font-family:"Cormorant Garamond",Didot,Georgia,serif;font-size:28px;font-weight:500;color:#f3ede2;text-align:center;opacity:0;animation:fade 1s ease .6s forwards}
@@ -162,14 +162,14 @@ html.light .toast{background:rgba(255,255,255,.9);color:#2a261f;box-shadow:0 12p
   <div class="stage">
     <svg viewBox="0 0 390 300" preserveAspectRatio="none"><defs>
       <radialGradient id="spg" cx="195" cy="235" r="210" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 235) scale(1 .55) translate(0 -235)"><stop offset="0" stop-color="#b8e0c8" stop-opacity=".45"/><stop offset=".4" stop-color="#7fb7a0" stop-opacity=".14"/><stop offset="1" stop-color="#7fb7a0" stop-opacity="0"/></radialGradient>
-      <linearGradient id="spl" x1="-10" x2="400" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#9fd6c0" stop-opacity="0"/><stop offset=".2" stop-color="#8fc9b4" stop-opacity=".45"/><stop offset=".5" stop-color="#f2f7ee"/><stop offset=".8" stop-color="#d9c79a" stop-opacity=".45"/><stop offset="1" stop-color="#d9c79a" stop-opacity="0"/></linearGradient>
+      <linearGradient id="spl" x1="-10" x2="400" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#9fd6c0" stop-opacity="0"/><stop offset=".2" stop-color="#8fc9b4" stop-opacity=".45"/><stop offset=".5" stop-color="#f2f7ee"/><stop offset=".8" stop-color="#8fc9b4" stop-opacity=".45"/><stop offset="1" stop-color="#9fd6c0" stop-opacity="0"/></linearGradient>
       <filter id="spb" x="-10%" y="-100%" width="120%" height="300%"><feGaussianBlur stdDeviation="5"/></filter>
       <clipPath id="spu"><path d="M-10 268 Q195 170 400 268 L400 0 L-10 0Z"/></clipPath></defs>
       <rect class="glw" width="390" height="300" fill="url(#spg)" clip-path="url(#spu)"/>
       <path class="hl" pathLength="100" d="M-10 268 Q195 170 400 268" fill="none" stroke="url(#spl)" stroke-width="6" filter="url(#spb)"/>
       <path class="hl" pathLength="100" d="M-10 268 Q195 170 400 268" fill="none" stroke="url(#spl)" stroke-width="1.6"/>
     </svg>
-    <div class="rr">r</div>
+    <svg class="rr" viewBox="216 138 80 208"><defs><linearGradient id="dm" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8c6af"/><stop offset=".45" stop-color="#77997f"/><stop offset="1" stop-color="#4c6a55"/></linearGradient><radialGradient id="dl" cx="42%" cy="36%" r="70%"><stop offset="0" stop-color="#f4fcf6"/><stop offset=".45" stop-color="#bfe4cd"/><stop offset="1" stop-color="#7fb596"/></radialGradient><filter id="dg" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="14"/></filter></defs><circle cx="256" cy="178" r="32" fill="url(#dm)"/><circle cx="256" cy="306" r="42" fill="#9fd6b4" opacity=".45" filter="url(#dg)"/><circle cx="256" cy="306" r="32" fill="url(#dl)"/></svg>
   </div>
   <div class="nm">Ratio <i>by Konta &amp; Cie</i></div><div class="hr"></div><div class="est">EST. 2026</div>
   <div class="ver">v 1.0</div>
@@ -449,7 +449,7 @@ async function scan(t){const m=market,cur=MK[m].cur;$$('#tickers .chip').forEach
 const pnl=x=>x.p!=null?x.p:(x.s==='long'?x.x-x.e:x.e-x.x)*x.q;
 const rmult=x=>x.st&&x.e?pnl(x)/(Math.abs(x.e-x.st)*x.q):null;
 const isToday=ts=>new Date(ts).toDateString()===new Date().toDateString();
-function today(c){const T=S.j.filter(x=>x.c===c&&isToday(x.ts)).sort((a,b)=>a.ts-b.ts);let streak=0;for(let i=T.length-1;i>=0&&pnl(T[i])<0;i--)streak++;
+function today(c){const T=S.j.filter(x=>x.c===c&&!x.sample&&isToday(x.ts)).sort((a,b)=>a.ts-b.ts);let streak=0;for(let i=T.length-1;i>=0&&pnl(T[i])<0;i--)streak++;
   return {n:T.length,sum:T.reduce((s,x)=>s+pnl(x),0),streak}}
 function brake(c){const r=S.rules[c],t=today(c),lossPct=t.sum<0?-t.sum/r.dep*100:0,why=[];
   if(lossPct>=r.day)why.push(`Убыток за день ${f(lossPct,1)}% при лимите ${f(r.day,1)}%`);
@@ -474,8 +474,8 @@ function renderHome(){segSet('#hCur','c',hcur);
   const real=S.j.filter(x=>!x.sample);
   $('#hStart').innerHTML=real.length?'':`<div class="card" style="margin-top:22px"><div style="font-size:15px;font-weight:500">С чего начать</div><ol class="steps" style="margin-top:6px">
     <li>Задайте депозит и лимиты в <button class="link" data-go="rules">правилах</button></li><li>Подключите <button class="link" data-go="ex">биржу</button> или <button class="link" data-go="import">загрузите отчет</button></li><li>Перед каждым входом проверяйте сделку во вкладке «Позиция»</li></ol></div>`;
-  const L=S.j.filter(x=>x.c===hcur);$('#hTip').textContent=coach(L,hcur)[0]||'Записывайте сделки, и коуч покажет, где вы теряете деньги.';
-  $('#hList').innerHTML=[...S.j].sort((a,b)=>b.ts-a.ts).slice(0,3).map(tradeRow).join('')||'<p class="note">Сделок пока нет.</p>';bindRows('#hList')}
+  const L=S.j.filter(x=>x.c===hcur&&!x.sample);$('#hTip').textContent=coach(L,hcur)[0]||'Записывайте сделки, и коуч покажет, где вы теряете деньги: отыгрыш, вечерние входы, сделки без стопа.';
+  $('#hList').innerHTML=[...S.j].filter(x=>!x.sample).sort((a,b)=>b.ts-a.ts).slice(0,3).map(tradeRow).join('')||'<p class="note">Здесь появятся ваши сделки. Примеры, чтобы посмотреть, как все работает, лежат в журнале.</p>';bindRows('#hList')}
 $('#hAdd').onclick=()=>tradeSheet(null);
 
 /* ---------- позиция ---------- */
