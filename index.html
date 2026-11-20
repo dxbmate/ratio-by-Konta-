@@ -10,9 +10,10 @@
 <meta name="apple-mobile-web-app-title" content="Ratio">
 <meta name="description" content="Ratio by Konta & Cie. Разбор рынка, размер позиции, журнал сделок и дневной лимит убытка.">
 <title>Ratio by Konta & Cie</title>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest?v=2">
+<link rel="icon" href="icon-192.png?v=2">
+<link rel="preload" as="image" href="ratio-mark.jpg?v=1">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
@@ -36,25 +37,25 @@ a{color:inherit;text-decoration:none}
 html.light .sky{display:none}
 .grain{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.05;background:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 html.light .grain{opacity:.3}
-html.booting main,html.booting .dock{opacity:0}
-main,.dock{transition:opacity .25s ease}
 main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:calc(14px + var(--st)) 20px calc(118px + var(--sb))}
 .view{display:none}.view.on{display:block;animation:in .4s var(--ease)}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* заставка */
 .splash{position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s ease,visibility .7s}
-.splash.out{opacity:0;visibility:hidden}
-.splash .stage{position:relative;width:100%;max-width:430px;height:300px}
+.splash.out{opacity:0;visibility:hidden;transition:opacity .55s cubic-bezier(.4,0,.2,1) .32s,visibility 0s linear .9s}
+.splash.out>*{opacity:0!important;transform:scale(.985);transition:opacity .34s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1);animation:none!important}
+.splash .stage{position:relative;width:min(80vw,320px);aspect-ratio:1;margin-top:-40px}
+.splash .mk{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-mask:radial-gradient(closest-side,#000 72%,transparent 100%);mask:radial-gradient(closest-side,#000 72%,transparent 100%);-webkit-user-drag:none;user-select:none;opacity:0;transform:translateY(12px) scale(.97);animation:rise 1.2s cubic-bezier(.2,.9,.25,1) .15s forwards}
 .splash .stage>svg:first-child{position:absolute;inset:0;width:100%;height:100%}
 .splash .rr{position:absolute;left:50%;top:62px;width:42px;height:109px;margin-left:-21px;overflow:visible;opacity:0;transform:translateY(10px);animation:rise 1s var(--ease) .15s forwards}
 .splash .hl{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.4s var(--ease) .1s forwards}
 .splash .glw{opacity:0;animation:fade 1.6s ease .3s forwards}
-.splash .nm{font-family:"Cormorant Garamond",Didot,Georgia,serif;font-size:28px;font-weight:500;color:#f3ede2;text-align:center;opacity:0;animation:fade 1s ease .6s forwards}
+.splash .nm{margin-top:4px;font-family:"Cormorant Garamond",Didot,Georgia,serif;font-size:28px;font-weight:500;color:#f3ede2;text-align:center;opacity:0;animation:fade 1s ease .6s forwards}
 .splash .nm i{font-style:italic;font-weight:400;font-size:19px;color:rgba(243,237,226,.55)}
 .splash .hr{width:34px;height:1px;background:rgba(243,237,226,.25);margin:14px auto 10px;opacity:0;animation:fade 1s ease .8s forwards}
 .splash .est{font-size:10.5px;letter-spacing:.32em;color:rgba(243,237,226,.45);text-align:center;opacity:0;animation:fade 1s ease .9s forwards}
-.splash .ver{position:absolute;bottom:calc(24px + var(--sb));font-size:11px;color:rgba(243,237,226,.3)}
+.splash .ver{position:absolute;bottom:calc(24px + var(--sb));opacity:0;animation:fade 1s ease 1s forwards;font-size:11px;color:rgba(243,237,226,.3)}
 @keyframes rise{to{opacity:1;transform:none}}@keyframes fade{to{opacity:1}}@keyframes draw{to{stroke-dashoffset:0}}
 
 /* знакомство */
@@ -170,13 +171,7 @@ html.light .toast{background:rgba(255,255,255,.9);color:#2a261f;box-shadow:0 12p
 </head>
 <body>
 <div class="splash" id="splash">
-  <div class="stage">
-    <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMid meet"><defs>
-      <radialGradient id="spg" cx="195" cy="186" r="110" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 186) scale(1 .3) translate(0 -186)"><stop offset="0" stop-color="#cfeedd" stop-opacity=".75"/><stop offset=".45" stop-color="#7fb596" stop-opacity=".25"/><stop offset="1" stop-color="#2f5a40" stop-opacity="0"/></radialGradient></defs>
-      <rect class="glw" width="390" height="300" fill="url(#spg)"/>
-    </svg>
-    <svg class="rr" viewBox="216 138 80 208"><defs><radialGradient id="dv" cx="40%" cy="32%" r="75%"><stop offset="0" stop-color="#fffefb"/><stop offset=".55" stop-color="#efe9df"/><stop offset="1" stop-color="#cfc7ba"/></radialGradient></defs><circle cx="256" cy="178" r="32" fill="url(#dv)"/><circle cx="256" cy="306" r="32" fill="url(#dv)"/></svg>
-  </div>
+  <div class="stage"><img class="mk" src="ratio-mark.jpg?v=1" alt=""></div>
   <div class="nm">Ratio <i>by Konta &amp; Cie</i></div><div class="hr"></div><div class="est">EST. 2026</div>
   <div class="ver">v 1.0</div>
 </div>
@@ -350,13 +345,13 @@ const chev='<svg class="i chev" viewBox="0 0 24 24"><path d="M9 5L16 12L9 19"/><
 const applyMode=()=>{const m=store.get('ratio.mode','auto'),L=m==='light'||(m==='auto'&&(tg&&tg.colorScheme?tg.colorScheme==='light':matchMedia('(prefers-color-scheme: light)').matches));
   document.documentElement.classList.toggle('light',L);const c=L?'#f2eee6':'#000000';$('meta[name=theme-color]').content=c;
   if(tg){try{tg.setHeaderColor(c);tg.setBackgroundColor(c);tg.setBottomBarColor&&tg.setBottomBarColor(c)}catch(e){}}segSet('#mode','m',m)};
-if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();if(/ios|android/.test(tg.platform)&&tg.isVersionAtLeast&&tg.isVersionAtLeast('8.0')&&tg.requestFullscreen){if(!tg.isFullscreen)document.documentElement.classList.add('booting');tg.requestFullscreen()}
-  /* Пока Telegram разворачивает экран и сообщает отступы, держим контент скрытым, чтобы он не прыгал */
-  if(document.documentElement.classList.contains('booting')){let done=false;const reveal=()=>{if(done)return;done=true;
-      const d=document.querySelector('.dock');if(d){d.style.display='none';void d.offsetHeight;d.style.display=''}
-      requestAnimationFrame(()=>document.documentElement.classList.remove('booting'))};
-    ['fullscreenChanged','contentSafeAreaChanged'].forEach(ev=>tg.onEvent(ev,()=>setTimeout(reveal,120)));
-    tg.onEvent('fullscreenFailed',reveal);setTimeout(reveal,1200)}tg.onEvent('themeChanged',applyMode)}catch(e){}}
+if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();if(/ios|android/.test(tg.platform)&&tg.isVersionAtLeast&&tg.isVersionAtLeast('8.0')&&tg.requestFullscreen)tg.requestFullscreen();
+  const relayout=()=>{const ae=document.activeElement;if(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
+    document.documentElement.style.minHeight=(tg.viewportStableHeight||innerHeight)+'px';const d=document.querySelector('.dock');d.style.display='none';void d.offsetHeight;d.style.display='';
+    const y=scrollY;scrollTo(0,y+1);scrollTo(0,y);if(typeof show==='function'&&typeof cur!=='undefined'&&cur==='home')show('home',true)};
+  ['fullscreenChanged','safeAreaChanged','contentSafeAreaChanged'].forEach(ev=>tg.onEvent(ev,()=>setTimeout(relayout,60)));
+  tg.onEvent('viewportChanged',e=>{if(e&&e.isStateStable)setTimeout(relayout,60)});
+  setTimeout(relayout,900);tg.onEvent('themeChanged',applyMode)}catch(e){}}
 applyMode();
 $$('#mode button').forEach(b=>b.onclick=()=>{store.set('ratio.mode',b.dataset.m);applyMode();haptic()});
 
@@ -832,7 +827,7 @@ function onboarding(){if(store.get('ratio.onb',0))return;const o=$('#onb');o.cla
   let x0=null;o.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});o.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;if(dx<-50&&i<SLIDES.length-1){i++;go()}else if(dx>50&&i>0){i--;go()}x0=null},{passive:true});go()}
 (function boot(){const sp=$('#splash');let seen=false;try{seen=sessionStorage.getItem('ratio.splash')}catch(e){}
   if(seen){sp.remove();onboarding();return}try{sessionStorage.setItem('ratio.splash',1)}catch(e){}
-  setTimeout(()=>{sp.classList.add('out');onboarding();setTimeout(()=>sp.remove(),800)},1700)})();
+  setTimeout(()=>{sp.classList.add('out');onboarding();setTimeout(()=>sp.remove(),1100)},2100)})();
 
 /* ---------- офлайн ---------- */
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude|anthropic/.test(location.host)){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
