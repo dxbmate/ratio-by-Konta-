@@ -126,6 +126,11 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.4;stro
 .setup .row{min-height:52px;padding:10px 0}.setup .row .n{font-size:14.5px}
 .ck{width:24px;height:24px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--mut2);display:grid;place-items:center}.ck.on{background:var(--sage);box-shadow:none;color:#0b0f0c}.ck svg{width:14px;height:14px}
 .done .n{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--mut2)}
+.tabs button{position:relative}.tabs button .dot,.row .dot{position:absolute;top:9px;right:calc(50% - 17px);width:7px;height:7px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 2px rgba(28,28,30,.9)}
+.row .dot{position:static;display:inline-block;margin-left:8px;vertical-align:middle;box-shadow:none}
+.news{padding:18px 0 20px;border-top:1px solid var(--line)}.news:first-of-type{border-top:0}
+.news .dt{font-size:12.5px;color:var(--mut)}.news h3{font-size:20px;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:6px 0 10px}.news p{font-size:15px;line-height:1.6;margin-top:8px}
+.news .new{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:8px;background:color-mix(in srgb,var(--sage) 22%,transparent);color:var(--sage);margin-left:8px}
 .tip{display:flex;gap:14px;align-items:flex-start}.tip p{font-size:14.5px;line-height:1.55}
 .ln{display:block;height:3px;border-radius:2px;background:var(--fill2);margin-top:8px;overflow:hidden}.ln i{display:block;height:100%;border-radius:2px;transition:width .8s var(--spring)}
 .fig{position:relative;height:190px;margin:16px 0 6px}.fig svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
@@ -289,6 +294,11 @@ html.light .toast{background:rgba(255,255,255,.9);color:#2a261f;box-shadow:0 12p
   </ul>
 </section>
 
+<section class="view" id="v-news">
+  <div class="hdr"><button class="rb back" aria-label="Назад"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M15 5L8 12L15 19"/></svg></button><div class="tt"><h1>Что нового</h1><div class="sub">Обновления Ratio</div></div></div>
+  <div id="newsList"></div>
+</section>
+
 <section class="view" id="v-import">
   <div class="hdr"><button class="rb back" aria-label="Назад"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M15 5L8 12L15 19"/></svg></button><div class="tt"><h1>Отчет брокера</h1><div class="sub">Любая биржа, брокер или MetaTrader</div></div></div>
   <div class="seg" id="iCur"><button data-c="$" class="on">В долларах</button><button data-c="₽">В рублях</button></div>
@@ -320,6 +330,8 @@ html.light .toast{background:rgba(255,255,255,.9);color:#2a261f;box-shadow:0 12p
 /* Адрес серверной функции Ratio (Yandex Cloud Function). Пусто: работаем без сервера. */
 const RATIO_API='https://functions.yandexcloud.net/d4eqb6rueqclt20q23jc';
 const VERSION='1.0';
+/* Имя бота без @ для кнопки «Войти через Telegram» на сайте */
+const BOT_NAME='ratiobyKonta_bot';
 const LINKS={channel:'https://t.me/kontacie',support:'https://t.me/KontaCieSupport'};
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -356,15 +368,17 @@ const SAMPLE=[
 ].map((a,i)=>({id:'s'+i,t:a[0],s:a[1],e:a[2],x:a[3],q:a[4],st:a[5],tags:a[6],c:a[7],ts:new Date(new Date(now-a[8]*DAY).setHours(a[9],10)).getTime(),n:'',sample:true}));
 const S=store.get('ratio.v3',null)||{j:SAMPLE,rules:{'$':{dep:5000,day:3,max:5,lev:5,risk:1,pause:2},'₽':{dep:300000,day:2,max:4,lev:1,risk:1,pause:2}},
   check:['Вход по тренду старшего таймфрейма','Стоп стоит до входа','Это не вход на новости','Я спокоен и не отыгрываюсь'],conns:[],scan:null};
-const save=()=>store.set('ratio.v3',S);save();
+let syncT;const save=()=>{store.set('ratio.v3',S);if(syncOn()){clearTimeout(syncT);syncT=setTimeout(()=>syncState(),1500)}};
+const syncOn=()=>store.get('ratio.sync',false)&&!!RATIO_API&&(inTG||!!store.get('ratio.sess',''));
+S.del=S.del||[];S.mt=S.mt||0;store.set('ratio.v3',S);
 
 /* ---------- навигация ---------- */
-const TABS=['home','scan','calc','log','more'],SUB={rules:'more',ex:'more',import:'more'};
+const TABS=['home','scan','calc','log','more'],SUB={rules:'more',ex:'more',import:'more',news:'more'};
 let cur='home';
 function show(v,quiet){cur=v;$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));const tab=SUB[v]||v;$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===tab));
   window.scrollTo(0,0);if(!quiet)haptic();
   if(tg&&tg.BackButton){try{SUB[v]?tg.BackButton.show():tg.BackButton.hide()}catch(e){}}
-  ({home:renderHome,calc:calc,log:renderJ,rules:renderRules,ex:renderEx,more:renderMore})[v]?.()}
+  ({home:renderHome,calc:calc,log:renderJ,rules:renderRules,ex:renderEx,more:renderMore,news:renderNews})[v]?.();newsDot()}
 $$('#tabs button').forEach(b=>b.onclick=()=>show(b.dataset.v));
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){e.preventDefault();show(g.dataset.go)}const bk=e.target.closest('.back');if(bk)show(SUB[cur]||'home')});
 if(tg&&tg.BackButton)try{tg.BackButton.onClick(()=>show(SUB[cur]||'home'))}catch(e){}
@@ -554,7 +568,7 @@ function renderJ(){
   const tips=coach(L,jcur);$('#jCoach').innerHTML=(tips.length?tips:['Нужно хотя бы три сделки, чтобы увидеть привычки.']).map(t=>`<li>${esc(t)}</li>`).join('');
   $('#aiBtnWrap').innerHTML=n>=3?'<button class="link" id="aiBtn">Подробный AI-разбор</button>':'';const ab=$('#aiBtn');if(ab)ab.onclick=aiCoach;
   $('#jSample').innerHTML=S.j.some(x=>x.sample)?'<p class="note" style="margin:0 0 6px">Сейчас здесь примеры, чтобы было видно, как работает разбор. <button class="link" id="clrS">Убрать примеры</button></p>':'';
-  const cs=$('#clrS');if(cs)cs.onclick=()=>{S.j=S.j.filter(x=>!x.sample);save();renderJ();toast('Примеры убраны')};
+  const cs=$('#clrS');if(cs)cs.onclick=()=>{S.j=S.j.filter(x=>!x.sample);S.mt=S.mt||1;save();renderJ();toast('Примеры убраны')};
   $('#jList').innerHTML=n?L.map(tradeRow).join(''):'<p class="note">Сделок пока нет. Добавьте вручную, подключите биржу или загрузите отчет.</p>';bindRows('#jList')}
 function tradeSheet(x){
   const sel=new Set(x?x.tags:[]),isNew=!x;x=x||{t:'',s:'long',e:'',x:'',q:'',st:'',c:cur==='log'?jcur:hcur,n:'',ts:Date.now(),tags:[]};
@@ -572,14 +586,14 @@ function tradeSheet(x){
   $('#fSave').onclick=()=>{const y={...x,t:$('#fT').value.trim().toUpperCase(),s:$('#fS').value,e:num($('#fE').value),x:num($('#fX').value),q:num($('#fQ').value),st:num($('#fSt').value)||null,c:$('#fC').value,ts:new Date($('#fD').value).getTime()||Date.now(),tags:[...sel],n:$('#fN').value.trim()};
     const hasP=x.p!=null&&!(y.e>0);if(!y.t||(!hasP&&!(y.e>0&&y.x>0&&y.q>0))){toast('Заполните тикер, вход, выход и количество');return}
     if(!hasP&&!x.src)delete y.p;if(isNew)y.id='m'+Date.now();delete y.sample;
-    S.j=isNew?[y,...S.j]:S.j.map(z=>z.id===x.id?y:z);save();closeSheet();if(y.c!==jcur){jcur=y.c;segSet('#jCur','c',jcur)}show(cur,true);haptic('medium');checkBrake(y.c)};
-  const del=$('#fDel');if(del)del.onclick=()=>{S.j=S.j.filter(z=>z.id!==x.id);save();closeSheet();show(cur,true);toast('Сделка удалена')}}
+    y.u=Date.now();S.j=isNew?[y,...S.j]:S.j.map(z=>z.id===x.id?y:z);save();closeSheet();if(y.c!==jcur){jcur=y.c;segSet('#jCur','c',jcur)}show(cur,true);haptic('medium');checkBrake(y.c)};
+  const del=$('#fDel');if(del)del.onclick=()=>{S.j=S.j.filter(z=>z.id!==x.id);S.del.push(x.id);save();closeSheet();show(cur,true);toast('Сделка удалена')}}
 $('#addT').onclick=()=>tradeSheet(null);
 function checkBrake(c){if(brake(c).why.length){toast('Лимит дня исчерпан: на сегодня хватит');try{tg&&tg.HapticFeedback.notificationOccurred('warning')}catch(e){}}}
 
 /* ---------- сервер ---------- */
 async function api(action,data){if(!RATIO_API)throw new Error('noapi');
-  const r=await fetch(RATIO_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,initData:tg?tg.initData:'',...data})});
+  const r=await fetch(RATIO_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,initData:tg?tg.initData:'',session:inTG?'':store.get('ratio.sess',''),...data})});
   const j=await r.json().catch(()=>({}));if(!r.ok||j.error)throw new Error(j.error||'Сервер недоступен');return j}
 async function aiCoach(){const L=S.j.filter(x=>x.c===jcur);
   if(!RATIO_API){$('#aiOut').innerHTML='<p class="note">Подробный AI-разбор появится в следующем обновлении. Пока работает встроенный коуч выше.</p>';return}
@@ -587,11 +601,59 @@ async function aiCoach(){const L=S.j.filter(x=>x.c===jcur);
   try{const j=await api('coach',{cur:jcur,trades:L.slice(0,200).map(x=>({t:x.t,s:x.s,e:x.e,x:x.x,q:x.q,st:x.st,p:pnl(x),tags:x.tags,ts:x.ts,n:x.n})),rules:S.rules[jcur]});
     $('#aiOut').innerHTML=`<div class="card" style="white-space:pre-wrap;font-size:14.5px;line-height:1.55">${esc(j.text)}</div>`}catch(e){$('#aiOut').innerHTML=`<p class="note">${esc(e.message)}</p>`}}
 
+
+/* ---------- синхронизация бота и сайта (включается пользователем) ---------- */
+let syncing=false;
+function mergeState(r){if(!r)return false;let ch=false;const del=new Set([...(S.del||[]),...(r.del||[])]);
+  const byId=new Map(S.j.filter(x=>!x.sample).map(x=>[x.id,x]));
+  (r.j||[]).forEach(x=>{const l=byId.get(x.id);if(!l||(x.u||0)>(l.u||0)){byId.set(x.id,x);ch=true}});
+  const merged=[...byId.values()].filter(x=>!del.has(x.id));if(merged.length!==S.j.filter(x=>!x.sample).length)ch=true;
+  const samples=merged.length?[]:S.j.filter(x=>x.sample);S.j=[...merged,...samples];S.del=[...del].slice(-2000);
+  if((r.mt||0)>(S.mt||0)){S.rules=r.rules||S.rules;S.check=r.check||S.check;S.setup={...(S.setup||{}),...(r.setup||{})};S.mt=r.mt;ch=true}
+  if(r.conns&&r.conns.length&&!S.conns.length){S.conns=r.conns;ch=true}return ch}
+async function syncState(quiet=true){if(!syncOn()||syncing)return;syncing=true;
+  try{const {state}=await api('pull',{});const ch=mergeState(state);store.set('ratio.v3',S);
+    await api('push',{state:{j:S.j.filter(x=>!x.sample),del:S.del,rules:S.rules,check:S.check,setup:S.setup,mt:S.mt,conns:S.conns,v:1}});
+    store.set('ratio.synced',Date.now());if(ch)show(cur,true);if(!quiet)toast('Синхронизировано')}
+  catch(e){if(/Войдите заново/.test(e.message)){store.set('ratio.sess','');}if(!quiet)toast(e.message)}finally{syncing=false}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncState()});
+window.onTelegramAuth=async user=>{try{const r=await fetch(RATIO_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',tg:user})}).then(r=>r.json());
+  if(!r.session)throw new Error(r.error||'Не удалось войти');store.set('ratio.sess',r.session);store.set('ratio.sync',true);closeSheet();await syncState(false);renderMore()}catch(e){toast(e.message)}};
+function syncSheet(){const on=store.get('ratio.sync',false),last=store.get('ratio.synced',0);
+  if(!RATIO_API){toast('Синхронизация появится в ближайшем обновлении');return}
+  if(on){openSheet(`<div class="hdr" style="margin-top:0"><div class="tt"><h1>Синхронизация включена</h1><div class="sub">Журнал и правила одинаковые в боте и на сайте${last?` · последний раз ${new Date(last).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}`:''}</div></div></div>
+    <button class="btn" id="syNow">Синхронизировать сейчас</button><button class="btn ghost" id="syOff" style="margin-top:8px">Выключить</button><button class="btn ghost" id="syDel" style="margin-top:8px">Выключить и удалить копию с сервера</button>`);
+    $('#syNow').onclick=()=>{closeSheet();syncState(false)};
+    $('#syOff').onclick=()=>{store.set('ratio.sync',false);closeSheet();renderMore();toast('Синхронизация выключена')};
+    $('#syDel').onclick=async()=>{try{await api('forget',{})}catch(e){}store.set('ratio.sync',false);store.set('ratio.sess','');closeSheet();renderMore();toast('Копия на сервере удалена')};return}
+  const body=`<div class="hdr" style="margin-top:0"><div class="tt"><h1>Бот и сайт вместе</h1><div class="sub">Журнал, правила и чеклист будут одинаковыми в Telegram и на ratio.kontacie.com</div></div></div>
+    <ul class="pts"><li>Копия хранится на сервере в России, в зашифрованном виде.</li><li>Вход по вашему Telegram, без паролей.</li><li>Выключить и удалить копию можно в любой момент.</li></ul>`;
+  if(inTG){openSheet(body+'<button class="btn" id="syOn" style="margin-top:14px">Включить</button>');$('#syOn').onclick=async()=>{store.set('ratio.sync',true);closeSheet();await syncState(false);renderMore()};return}
+  if(!BOT_NAME){openSheet(body+'<p class="note">Вход на сайте скоро заработает. Пока синхронизацию можно включить в боте.</p>');return}
+  openSheet(body+'<div id="tgLogin" style="display:flex;justify-content:center;margin-top:16px;min-height:48px"></div><p class="note" style="text-align:center">Войдите тем же Telegram, что и в боте</p>');
+  const sc=document.createElement('script');sc.async=true;sc.src='https://telegram.org/js/telegram-widget.js?22';
+  sc.setAttribute('data-telegram-login',BOT_NAME);sc.setAttribute('data-size','large');sc.setAttribute('data-radius','20');sc.setAttribute('data-onauth','onTelegramAuth(user)');sc.setAttribute('data-request-access','write');$('#tgLogin').appendChild(sc)}
+
+
+/* ---------- что нового ---------- */
+const NEWS=[
+  {id:1,date:'20 ноября 2026',title:'Бот и сайт теперь вместе',
+   text:['Журнал, правила и чеклист теперь могут жить сразу в Telegram и на ratio.kontacie.com. Записали сделку в боте, вечером открыли сайт на ноутбуке: она уже там.',
+         'Синхронизация выключена по умолчанию. Включить ее можно здесь или в «Еще» → «Бот и сайт вместе». На сайте вход через Telegram, без паролей.',
+         'Копия хранится на сервере в России в зашифрованном виде. Выключить синхронизацию и удалить копию можно в один тап.'],
+   action:['Включить синхронизацию',()=>syncSheet()]}];
+const newsUnread=()=>NEWS.length&&NEWS[0].id>store.get('ratio.newsSeen',0);
+function newsDot(){const b=$('#tabs button[data-v=more]');let d=b.querySelector('.dot');if(newsUnread()&&!d){d=document.createElement('i');d.className='dot';b.appendChild(d)}else if(!newsUnread()&&d)d.remove()}
+function renderNews(){const seen=store.get('ratio.newsSeen',0);
+  $('#newsList').innerHTML=NEWS.map((n,i)=>`<article class="news"><div class="dt">${n.date}${n.id>seen?'<span class="new">новое</span>':''}</div><h3>${esc(n.title)}</h3>${n.text.map(p=>`<p>${esc(p)}</p>`).join('')}${n.action?`<button class="btn" data-na="${i}" style="margin-top:16px">${esc(n.action[0])}</button>`:''}</article>`).join('');
+  $$('#newsList [data-na]').forEach(b=>b.onclick=()=>NEWS[+b.dataset.na].action[1]());
+  store.set('ratio.newsSeen',NEWS[0].id)}
+
 /* ---------- правила ---------- */
 let rcur='$';
 $$('#rCur button').forEach(b=>b.onclick=()=>{rcur=b.dataset.c;segSet('#rCur','c',rcur);renderRules();haptic()});
 const RF=[['rDep','dep'],['rDay','day'],['rMax','max'],['rLev','lev'],['rRisk','risk'],['rPause','pause']];
-RF.forEach(([id,k])=>$('#'+id).oninput=()=>{const v=num($('#'+id).value);if(v>=0){S.rules[rcur][k]=v;(S.setup=S.setup||{}).rules=1;save();renderStatus()}});
+RF.forEach(([id,k])=>$('#'+id).oninput=()=>{const v=num($('#'+id).value);if(v>=0){S.rules[rcur][k]=v;S.mt=Date.now();(S.setup=S.setup||{}).rules=1;save();renderStatus()}});
 function renderStatus(){const b=brake(rcur),r=b.r,used=Math.min(100,b.lossPct/r.day*100||0),tu=Math.min(100,b.t.n/r.max*100||0);
   $('#rStatus').innerHTML=`<div class="hero"><div class="lbl">Сегодня</div><div class="num ${b.why.length?'c-clay':''}" style="font-size:40px">${b.why.length?'На сегодня все':'Можно работать'}</div><div class="sub">${b.why.length?esc(b.why.join('. ')):'Лимиты не нарушены'}</div></div>
   <div class="row"><span class="t"><span class="n">Убыток за день</span><span class="ln"><i style="width:${used}%;background:${used>=100?'var(--clay)':used>60?'var(--amb)':'var(--sage)'}"></i></span></span><span class="a">${f(b.lossPct,1)}% из ${f(r.day,1)}%</span></div>
@@ -599,9 +661,9 @@ function renderStatus(){const b=brake(rcur),r=b.r,used=Math.min(100,b.lossPct/r.
   <div class="row"><span class="t"><span class="n">Стопов подряд</span></span><span class="a">${b.t.streak} из ${r.pause||'∞'}</span></div>`}
 function renderRules(){$('#rDepL').textContent='Депозит, '+rcur;RF.forEach(([id,k])=>$('#'+id).value=S.rules[rcur][k]);renderStatus();
   $('#rList').innerHTML=S.check.map((c,i)=>`<div class="row"><span class="t"><span class="n">${esc(c)}</span></span><button class="link" data-del="${i}">Убрать</button></div>`).join('');
-  $$('#rList [data-del]').forEach(b=>b.onclick=()=>{S.check.splice(+b.dataset.del,1);checked.clear();save();renderRules()})}
+  $$('#rList [data-del]').forEach(b=>b.onclick=()=>{S.check.splice(+b.dataset.del,1);S.mt=Date.now();checked.clear();save();renderRules()})}
 $('#addRule').onclick=()=>{openSheet(`<div class="hdr" style="margin-top:0"><div class="tt"><h1>Новый пункт</h1><div class="sub">Коротко, как правило для себя</div></div></div><input id="nr" placeholder="Например: не торгую после 22:00"><button class="btn" id="nrS" style="margin-top:14px">Добавить</button>`);
-  $('#nrS').onclick=()=>{const v=$('#nr').value.trim();if(v){S.check.push(v);save();closeSheet();renderRules()}}};
+  $('#nrS').onclick=()=>{const v=$('#nr').value.trim();if(v){S.check.push(v);S.mt=Date.now();save();closeSheet();renderRules()}}};
 
 /* ---------- биржи ---------- */
 const EX=[['bybit','Bybit'],['binance','Binance'],['okx','OKX',1],['bingx','BingX'],['bitget','Bitget',1],['mexc','MEXC'],['gate','Gate'],['htx','HTX'],['kucoin','KuCoin',1],['tinvest','Т-Инвестиции',2],['bybit-testnet','Bybit Testnet',3]];
@@ -625,7 +687,7 @@ function exSheet(id){const [,n,k]=EX.find(e=>e[0]===id),on=S.conns.includes(id);
     catch(e){toast(e.message);$('#kGo').disabled=false;$('#kGo').textContent='Подключить'}}}
 async function sync(){if(!S.conns.length||!RATIO_API)return;const b=$('#syncBtn');b.disabled=true;b.textContent='Загружаю…';
   try{const j=await api('sync',{rules:S.rules});const have=new Set(S.j.map(x=>x.id));let add=0;
-    (j.trades||[]).forEach(x=>{if(!have.has(x.id)){S.j.push({tags:[],n:'',...x});add++}});save();toast(add?`Новых сделок: ${add}`:'Новых сделок нет');
+    (j.trades||[]).forEach(x=>{if(!have.has(x.id)&&!S.del.includes(x.id)){S.j.push({tags:[],n:'',...x,u:Date.now()});add++}});save();toast(add?`Новых сделок: ${add}`:'Новых сделок нет');
     if(j.errors&&j.errors.length)setTimeout(()=>toast(j.errors[0]),3000);['$','₽'].forEach(checkBrake);show(cur,true)}
   catch(e){toast(e.message)}finally{b.disabled=false;b.textContent='Загрузить сделки'}}
 $('#syncBtn').onclick=sync;
@@ -702,7 +764,7 @@ function renderImport(){const {trades,mode}=toTrades(parsed),have=new Set(S.j.ma
     <button class="btn" id="iGo" style="margin-top:16px" ${fresh.length?'':'disabled'}>Добавить в журнал</button>
     <details style="margin-top:14px"><summary class="link" style="list-style:none;cursor:pointer">Колонки распознаны неверно?</summary><div class="fields" style="margin-top:12px">${Object.keys(FN).map(k=>`<div><label>${FN[k]}</label>${opts(k)}</div>`).join('')}</div></details>`;
   $$('#iOut select').forEach(s=>s.onchange=()=>{const k=s.dataset.k;if(s.value==='')delete parsed.map[k];else parsed.map[k]=+s.value;renderImport()});
-  $('#iGo').onclick=()=>{fresh.forEach(x=>S.j.push({...x,c:icur}));S.j=S.j.filter(x=>!x.sample);save();toast(`Добавлено: ${fresh.length}`);haptic('medium');jcur=icur;segSet('#jCur','c',jcur);parsed=null;$('#iOut').innerHTML='';$('#iFile').value='';show('log')}}
+  $('#iGo').onclick=()=>{const now=Date.now();fresh.forEach(x=>S.j.push({...x,c:icur,u:now}));S.del=S.del.filter(id=>!fresh.some(x=>x.id===id));S.j=S.j.filter(x=>!x.sample);save();toast(`Добавлено: ${fresh.length}`);haptic('medium');jcur=icur;segSet('#jCur','c',jcur);parsed=null;$('#iOut').innerHTML='';$('#iFile').value='';show('log')}}
 $('#iFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;$('#iOut').innerHTML='<p class="note">Читаю отчет…</p>';
   try{const ext=file.name.split('.').pop().toLowerCase();let rows;
     if(ext==='xlsx'||ext==='xls')rows=await readXLSX(await file.arrayBuffer());
@@ -718,23 +780,26 @@ let deferredInstall=null;window.addEventListener('beforeinstallprompt',e=>{e.pre
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 function renderMore(){const I=(p)=>`<span class="ic"><svg class="i" viewBox="0 0 24 24">${p}</svg></span>`;
   const items=[
+    ['news',I('<path d="M5 4H16A2 2 0 0 1 18 6V18A2 2 0 0 0 20 20H6A2 2 0 0 1 4 18V5A1 1 0 0 1 5 4Z"/><path d="M18 9H20V18A2 2 0 0 1 18 20M8 8H14M8 12H14M8 16H11"/>'),'Что нового',NEWS[0].title],
     ['rules',I('<path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/><path d="M8.5 12L11 14.5L15.5 9.5"/>'),'Правила и лимиты','Дневной лимит убытка, чеклист перед входом'],
     ['ex',I('<path d="M9 15L15 9"/><path d="M11 6L13 4A4 4 0 0 1 20 11L18 13M13 18L11 20A4 4 0 0 1 4 13L6 11"/>'),'Биржи','Bybit, Binance, OKX и еще 7'],
     ['import',I('<path d="M3 14V19H21V14"/><path d="M12 3V15M7 10L12 15L17 10"/>'),'Загрузить отчет','CSV, Excel, MetaTrader'],
     ['home-screen',I('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 9V15M9 12H15"/>'),'Добавить на экран «Домой»','Открывать Ratio одним касанием'],
     ['channel',I('<path d="M21 4L3 11L10 13.5M21 4L18 20L10 13.5M21 4L10 13.5V19L13 15.5"/>'),'Канал Konta & Cie','Новости и обновления'],
     ['support',I('<path d="M4 12A8 8 0 1 1 7.5 18.6L4 20L5.2 16.6A8 8 0 0 1 4 12Z"/><path d="M9 10.5A3 3 0 1 1 12 13.5V14.5M12 17V17.2"/>'),'Поддержка','Вопрос или идея'],
+    ['sync',I('<path d="M4 12A8 8 0 0 1 18.5 7.5M20 12A8 8 0 0 1 5.5 16.5"/><path d="M18.5 3.5V7.5H14.5M5.5 20.5V16.5H9.5"/>'),'Бот и сайт вместе',store.get('ratio.sync',false)?'Синхронизация включена':'Синхронизация выключена'],
     ['security',I('<path d="M12 3L20 6V12C20 17 16.5 20 12 21C7.5 20 4 17 4 12V6L12 3Z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.2 10.5V9.3A1.8 1.8 0 0 1 13.8 9.3V10.5"/>'),'Безопасность и данные','Где хранятся сделки и ключи'],
     ['about',I('<circle cx="12" cy="12" r="8.5"/><path d="M12 11V16.5M12 7.8V8"/>'),'О Ratio','Что это и как устроено']];
-  $('#moreList').innerHTML=items.filter(i=>!(i[0]==='home-screen'&&standalone())).map(([k,ic,n,s])=>`<button class="row" data-m="${k}">${ic}<span class="t"><span class="n">${n}</span><span class="s">${s}</span></span>${chev}</button>`).join('');
+  $('#moreList').innerHTML=items.filter(i=>!(i[0]==='home-screen'&&standalone())).map(([k,ic,n,s])=>`<button class="row" data-m="${k}">${ic}<span class="t"><span class="n">${n}${k==='news'&&newsUnread()?'<i class="dot"></i>':''}</span><span class="s">${s}</span></span>${chev}</button>`).join('');
   $$('#moreList .row').forEach(b=>b.onclick=()=>more(b.dataset.m));segSet('#mode','m',store.get('ratio.mode','auto'))}
 function openLink(u){try{if(tg&&u.startsWith('https://t.me/'))return tg.openTelegramLink(u);if(tg)return tg.openLink(u)}catch(e){}window.open(u,'_blank')}
 function more(k){haptic();
-  if(['rules','ex','import'].includes(k))return show(k);
+  if(['rules','ex','import','news'].includes(k))return show(k);
   if(k==='channel')return openLink(LINKS.channel);
   if(k==='support')return openLink(LINKS.support);
+  if(k==='sync')return syncSheet();
   if(k==='security')return openSheet(`<div class="hdr" style="margin-top:0"><div class="tt"><h1>Безопасность</h1><div class="sub">Коротко и честно о ваших данных</div></div></div>
-    <ul class="pts"><li><b style="font-weight:500">Журнал и правила</b> хранятся только на вашем телефоне. На сервер они не отправляются, если вы сами не попросите AI-разбор.</li>
+    <ul class="pts"><li><b style="font-weight:500">Журнал и правила</b> ${store.get('ratio.sync',false)?'синхронизируются между ботом и сайтом: копия хранится на сервере в России в зашифрованном виде. Выключить и удалить ее можно в «Бот и сайт вместе».':'хранятся только на вашем телефоне. На сервер они не отправляются, пока вы сами не включите синхронизацию или AI-разбор.'}</li>
     <li><b style="font-weight:500">Биржи подключаются ключом только для чтения.</b> Таким ключом нельзя торговать и выводить деньги, даже если его украдут. При создании ключа проверьте, что торговля и вывод выключены.</li>
     <li><b style="font-weight:500">Ключи шифруются</b> (AES) и хранятся на сервере в России, в Yandex Cloud. В приложение они не возвращаются, а при отключении биржи удаляются.</li>
     <li><b style="font-weight:500">Вход только через Telegram.</b> Сервер проверяет подпись Telegram, поэтому подставить чужой аккаунт нельзя.</li>
@@ -770,6 +835,7 @@ function onboarding(){if(store.get('ratio.onb',0))return;const o=$('#onb');o.cla
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude|anthropic/.test(location.host)){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
 
 renderTickers();scan(MK[market].tick[0]);show('home',true);
+syncState();
 if(RATIO_API&&S.conns.length)sync();
 }
 </script>
